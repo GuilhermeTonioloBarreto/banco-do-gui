@@ -15,7 +15,7 @@ function operacaoInicial(){
         'Saldo da conta',
         'Depositar dinheiro',
         'Sacar dinheiro',
-        'Excluir dinheiro',
+        'Excluir conta',
         'Acesso root',
         'Sair'
       ]
@@ -34,10 +34,10 @@ function operacaoInicial(){
         checarNomeESenhaDaConta('deposito')
         break
       case 'Sacar dinheiro':
-        console.log('sacar')
+        checarNomeESenhaDaConta('saque')
         break
-      case 'Excluir dinheiro':
-        console.log('Excluir')
+      case 'Excluir conta':
+        checarNomeESenhaDaConta('excluir')
         break
       case 'Acesso root':
         console.log('Root')
@@ -164,6 +164,12 @@ function checarNomeESenhaDaConta(acaoFutura){
         case 'deposito':
           depositoNaConta(nomeDaConta)
           break
+        case 'saque':
+          saqueDaConta(nomeDaConta)
+          break
+        case 'excluir':
+          excluirContaDeUsuario(nomeDaConta)
+          break
       }
 
     })
@@ -232,7 +238,83 @@ function depositoNaConta(nomeDaConta){
 
 // ------------------------------------------------------
 
+// faz o saque da conta
+function saqueDaConta(nomeDaConta){
+  
+  // verificar o valor para saque
+  inquirer.prompt([
+    {
+      name: 'valorDoSaque',
+      message: 'Digite o valor do saque:'
+    }
+  ])
+  .then(res => {
+    const valorDoSaque = res['valorDoSaque']
+
+    // checar se o usuario digitou de fato um numero
+    if(!valorDoSaque || isNaN(valorDoSaque)){
+      console.log(chalk.bgRed.black('Valor incorreto\n'))
+      operacaoInicial()
+      return
+    }
+
+    // pegar dados da conta
+    let dadosDaConta = pegarDadosDaConta(nomeDaConta)
+
+    // checar se o usuario digitou um valor maior que ele tem
+    if(valorDoSaque > dadosDaConta.saldo){
+      console.log(chalk.bgRed.black('O valor de saque é maior que o valor que tem na conta\n'))
+      operacaoInicial()
+      return
+    }
+    
+    dadosDaConta.saldo = parseFloat(dadosDaConta.saldo) - parseFloat(valorDoSaque)
+
+    // sobrescrever conta com dados atualizados
+    const fb = criarConta(nomeDaConta, dadosDaConta)
+
+    if(fb){
+      console.log(chalk.bgGreen.black(`O saque de R$ ${valorDoSaque} foi realizado!\n`))
+      operacaoInicial()
+      return
+    } else {
+      console.log(chalk.bgRed.black(`Houve um erro na realização do saque\n`))
+      operacaoInicial()
+      return
+    }
+    
+  })
+  .catch(err => console.log(err))
+  
+}
+
+
 // ------------------------------------------------------
+
+// exclui a conta
+function excluirContaDeUsuario(nomeDaConta){
+
+  const saldoDaConta = pegarSaldoDaConta(nomeDaConta)
+  
+  if(saldoDaConta != 0 ){
+    console.log(chalk.bgRed.black('O saldo de sua conta é maior que R$ 0. Não é possível excluir sua conta\n'))
+    operacaoInicial()
+    return
+  }
+
+  const fb = excluirConta(nomeDaConta)
+    
+  if(fb){
+      console.log(chalk.bgGreen.black(`Sua conta foi excluí-da!\n`))
+      operacaoInicial()
+      return
+    } else {
+      console.log(chalk.bgRed.black(`Houve um erro na exclusão de sua conta\n`))
+      operacaoInicial()
+      return
+    }
+
+}
 
 // ------------------------------------------------------
 
@@ -273,13 +355,16 @@ function pegarDadosDaConta(nomeDaConta){
 function criarConta(nomeDaConta, dadosDaConta){
 
   // cria um arquivo (se o arquivo já existir, ele é substituído)
-  fs.writeFileSync(`./contas/${nomeDaConta}.json`, JSON.stringify(dadosDaConta), error => {
-    console.log(error)
-    return false
-  })
+  fs.writeFileSync(`./contas/${nomeDaConta}.json`, JSON.stringify(dadosDaConta))
 
   return true
+}
 
+// excluir conta
+function excluirConta(nomeDaConta){
+  fs.unlinkSync(`./contas/${nomeDaConta}.json`)
+
+  return true
 }
 // ------------------------------------------------------
 
