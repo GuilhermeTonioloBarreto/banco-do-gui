@@ -16,7 +16,8 @@ function operacaoInicial(){
         'Depositar dinheiro',
         'Sacar dinheiro',
         'Excluir conta',
-        'Acesso root',
+        'Alterar Senha',
+        'Listar contas (root)',
         'Sair'
       ]
     }
@@ -39,8 +40,11 @@ function operacaoInicial(){
       case 'Excluir conta':
         checarNomeESenhaDaConta('excluir')
         break
-      case 'Acesso root':
-        console.log('Root')
+      case 'Alterar Senha':
+        console.log('Função não habilitada')
+        break
+      case 'Listar contas':
+        console.log('Função não habilitada')
         break
       case 'Sair':
         process.exit()
@@ -367,8 +371,5 @@ function excluirConta(nomeDaConta){
   return true
 }
 // ------------------------------------------------------
-
-
-
 
 operacaoInicial()
